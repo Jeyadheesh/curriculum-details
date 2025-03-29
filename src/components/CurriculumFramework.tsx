@@ -24,16 +24,32 @@ export default function CurriculumFramework() {
           id: "1.1",
           text: "Level 1.1",
           levels: [
-            { id: "1.1.1", text: "Level 1.1.1" },
-            { id: "1.1.2", text: "Level 1.1.2" },
+            {
+              id: "1.1.1",
+              text: "Level 1.1.1",
+              levels: [],
+            },
+            {
+              id: "1.1.2",
+              text: "Level 1.1.2",
+              levels: [],
+            },
           ],
         },
         {
           id: "1.2",
           text: "Level 1.2",
           levels: [
-            { id: "1.2.1", text: "Level 1.2.1" },
-            { id: "1.2.2", text: "Level 1.2.2" },
+            {
+              id: "1.2.1",
+              text: "Level 1.2.1",
+              levels: [],
+            },
+            {
+              id: "1.2.2",
+              text: "Level 1.2.2",
+              levels: [],
+            },
           ],
         },
       ],
@@ -45,102 +61,183 @@ export default function CurriculumFramework() {
         {
           id: "2.1",
           text: "Level 2.1",
-          levels: [{ id: "2.1.1", text: "Level 2.1.1" }],
+          levels: [
+            {
+              id: "2.1.1",
+              text: "Level 2.1.1",
+              levels: [],
+            },
+          ],
         },
         {
           id: "2.2",
           text: "Level 2.2",
-          levels: [{ id: "2.2.1", text: "Level 2.2.1" }],
+          levels: [
+            {
+              id: "2.2.1",
+              text: "Level 2.2.1",
+              levels: [],
+            },
+          ],
         },
       ],
     },
   ]);
   const w = 62;
 
+  function getColumnLevels(
+    levels: Levels[],
+    columnIndex: number,
+    currentLevel: number = 0
+  ): Levels[] {
+    if (currentLevel === columnIndex) {
+      return levels;
+    }
+
+    const subLevels: Levels[] = [];
+    levels.forEach((level) => {
+      if (level.levels) {
+        subLevels.push(
+          ...getColumnLevels(level.levels, columnIndex, currentLevel + 1)
+        );
+      }
+    });
+
+    return subLevels;
+  }
+
   function renderLevels(levels?: Levels[]) {
     if (!levels) return null;
-    return levels.map((level, index) => (
-      <div
-        key={level.id}
-        className={`${index === levels.length - 1 || "border-b"} flex `}
-      >
+    return levels
+      .filter((level) => level.id.split(".").length <= noOfLevels)
+      .map((level, index) => (
         <div
-          style={{
-            width: `${w / noOfLevels}vw`,
-          }}
-          className="border-r border-gray-300 relative"
+          id={level.id + " " + index}
+          key={level.id}
+          className={`${index === levels.length - 1 || "border-b"} flex `}
         >
-          <h1 className="grid place-content-center h-full p-2">
-            <span
-              className="
+          <div
+            style={{
+              width: `${w / noOfLevels}vw`,
+            }}
+            className="border-r border-gray-300 relative"
+          >
+            <h1 className="grid place-content-center h-full p-2">
+              <span
+                className="
             font-extralight"
-            >
-              {level.text}
-            </span>
-          </h1>
-          {/* Show "+" icon only in the last cell of the row */}
-          {index === levels.length - 1 && (
-            <div className="absolute right-2 bottom-1">
-              <Button
-                variant="outline"
-                className="rounded text-[#2688EB] p-0.5 border border-[#2688EB] cursor-pointer"
-                onClick={() => addLevel(level.id)}
               >
-                <Plus className="h-5 w-5 font-extralight" />
-              </Button>
-            </div>
-          )}
-        </div>
+                {level.text}
+              </span>
+            </h1>
+            {/* Show "+" icon only in the last cell of the row */}
+            {index === levels.length - 1 && (
+              <div className="absolute right-2 bottom-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="rounded text-[#2688EB] border border-[#2688EB] cursor-pointer p"
+                  onClick={() => addLevel(level.id)}
+                >
+                  <Plus className=" font-extralight" />
+                </Button>
+              </div>
+            )}
+          </div>
 
-        {index < noOfLevels - 1 && level.levels && (
-          <div>{renderLevels(level.levels)}</div>
-        )}
-      </div>
-    ));
+          {level.levels && <div>{renderLevels(level.levels)}</div>}
+        </div>
+      ));
   }
 
   const addLevel = (id: string) => {
     let newLevels = [...levels];
 
     const findAndAddLevel = (levels: Levels[], parentId: string) => {
+      const columnNumber = parseInt(parentId.split(".").length.toString());
+      console.log("Column index:", columnNumber);
+      if (columnNumber === 1) {
+        let newLevelId = `${parseInt(parentId.split(".").pop()!) + 1}`;
+        console.log("New level ID:", newLevelId);
+
+        const diffColumnNumber = noOfLevels - columnNumber;
+        console.log("Diff column number:", diffColumnNumber);
+        let newLevel: Levels = {
+          id: newLevelId,
+          text: `Level ${newLevelId}`,
+          levels: [],
+        };
+
+        let currentLevel = newLevel;
+
+        for (let i = 0; i < diffColumnNumber; i++) {
+          newLevelId = `${newLevelId}.1`;
+
+          const newSubLevel = {
+            id: newLevelId,
+            text: `Level ${newLevelId}`,
+            levels: [],
+          };
+
+          currentLevel.levels && currentLevel.levels.push(newSubLevel);
+          currentLevel = newSubLevel;
+        }
+
+        newLevels = [...levels, newLevel];
+        return true;
+      }
+
       for (let level of levels) {
         const compareId =
-          parentId.split(".").length > 1
+          columnNumber > 1
             ? parentId.split(".").slice(0, -1).join(".")
             : parentId;
-
+        console.log("Comparing ID:", compareId, "with level ID:", level.id);
         if (level.id === compareId) {
-          // Create a new level with an incremented ID
-          const newLevelId = `${parentId.split(".").slice(0, -1).join(".")}.${
+          let newLevelId = `${parentId.split(".").slice(0, -1).join(".")}.${
             parseInt(parentId.split(".").pop()!) + 1
           }`;
 
-          // Check if the new level already exists
-          const existingLevel = newLevels.find((l) => l.id === newLevelId);
+          const diffColumnNumber = noOfLevels - columnNumber;
+          console.log("Diff column number:", diffColumnNumber);
+          let newLevel: Levels = {
+            id: newLevelId,
+            text: `Level ${newLevelId}`,
+            levels: [],
+          };
 
-          if (!existingLevel) {
-            const newLevel = {
+          let currentLevel = newLevel;
+
+          for (let i = 0; i < diffColumnNumber; i++) {
+            newLevelId = `${newLevelId}.1`;
+
+            const newSubLevel = {
               id: newLevelId,
               text: `Level ${newLevelId}`,
               levels: [],
             };
 
-            // Add the new level to the current level's children
-            level.levels = level.levels
-              ? [...level.levels, newLevel]
-              : [newLevel];
+            currentLevel.levels && currentLevel.levels.push(newSubLevel);
+            currentLevel = newSubLevel;
           }
-          return true; // Level added
+
+          level.levels = level.levels
+            ? [...level.levels, newLevel]
+            : [newLevel];
+          console.log("New level added:", newLevel);
+
+          return true;
         }
         if (level.levels) {
           const found = findAndAddLevel(level.levels, parentId);
-          if (found) return true; // Level added in nested levels
+          if (found) return true;
         }
       }
-      return false; // Level not found
+      return false;
     };
 
     findAndAddLevel(newLevels, id);
+    console.log("New levels after addition:", newLevels);
     setLevels(newLevels);
   };
 
@@ -159,7 +256,6 @@ export default function CurriculumFramework() {
     console.log("Appending sub-levels at depth:", currentDepth, targetDepth);
 
     return levels.map((level) => {
-      // If the current depth is one less than the target depth, add a new sub-level
       if (currentDepth === targetDepth - 1) {
         const newSubLevelId = `${level.id}.1`;
         const newSubLevel = {
@@ -168,13 +264,11 @@ export default function CurriculumFramework() {
           levels: [],
         };
 
-        // Add the new sub-level if it doesn't already exist
         if (!level.levels?.some((subLevel) => subLevel.id === newSubLevelId)) {
           level.levels = [...(level.levels || []), newSubLevel];
         }
       }
 
-      // Recursively traverse deeper levels
       if (level.levels) {
         level.levels = appendSubLevels(
           level.levels,

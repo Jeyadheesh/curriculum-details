@@ -260,26 +260,28 @@ export default function CurriculumFramework() {
         </div>
 
         {/* Framework Table */}
-        <div
-          style={{
-            width: `${w}vw`,
-          }}
-          className="border mx-auto mt-2 mb-4 overflow-hidden"
-        >
-          {/* Table Headers */}
-          <div className="flex bg-[#333333] text-white border">
-            {Array.from({ length: noOfLevels }, (_, i) => (
-              <div
-                key={i + 1}
-                className="flex-1 items-center justify-center border-r text-sm border-r-white uppercase border-[#333333] p-2 text-center"
-              >
-                ADD NAME FOR Level {i + 1}
-              </div>
-            ))}
-          </div>
+        <div className="w-full overflow-x-auto">
+          <div
+            style={{
+              width: `${w}vw`,
+            }}
+            className="border mx-auto mt-2 mb-4 "
+          >
+            {/* Table Headers */}
+            <div className="flex bg-[#333333] text-white border">
+              {Array.from({ length: noOfLevels }, (_, i) => (
+                <div
+                  key={i + 1}
+                  className="flex-1 items-center justify-center border-r text-sm border-r-white uppercase border-[#333333] p-2 text-center"
+                >
+                  ADD NAME FOR Level {i + 1}
+                </div>
+              ))}
+            </div>
 
-          {/* Table Content */}
-          <div className="">{renderLevels(levels)}</div>
+            {/* Table Content */}
+            <div className="">{renderLevels(levels)}</div>
+          </div>
         </div>
       </div>
 

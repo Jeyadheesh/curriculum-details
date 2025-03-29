@@ -15,6 +15,9 @@ interface Levels {
 export default function CurriculumFramework() {
   const [levelLists, setLevelLists] = useState<number[]>([1, 2, 3, 4, 5]);
   const [noOfLevels, setNoOfLevels] = useState<number>(3);
+  // const dynamicWidth = `${100 / noOfLevels}%`;
+  const dynamicWidth = `${62 / noOfLevels}vw`;
+
   const [levels, setLevels] = useState<Levels[]>([
     {
       id: "1",
@@ -118,7 +121,7 @@ export default function CurriculumFramework() {
         >
           <div
             style={{
-              width: `${w / noOfLevels}vw`,
+              width: dynamicWidth,
             }}
             className="border-r border-gray-300 relative"
           >
@@ -130,17 +133,15 @@ export default function CurriculumFramework() {
                 {level.text}
               </span>
             </h1>
-            {/* Show "+" icon only in the last cell of the row */}
+
             {index === levels.length - 1 && (
               <div className="absolute right-2 bottom-1">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="rounded text-[#2688EB] border border-[#2688EB] cursor-pointer p"
+                <button
+                  className="rounded text-[#2688EB] border border-[#2688EB] cursor-pointer"
                   onClick={() => addLevel(level.id)}
                 >
-                  <Plus className=" font-extralight" />
-                </Button>
+                  <Plus className="" />
+                </button>
               </div>
             )}
           </div>
@@ -242,9 +243,7 @@ export default function CurriculumFramework() {
   };
 
   const saveFramework = () => {
-    console.log("Saving framework:", {
-      levels,
-    });
+    console.log("Saved framework:", { levels });
     alert("Framework saved successfully!");
   };
 
@@ -256,19 +255,23 @@ export default function CurriculumFramework() {
     console.log("Appending sub-levels at depth:", currentDepth, targetDepth);
 
     return levels.map((level) => {
-      if (currentDepth === targetDepth - 1) {
-        const newSubLevelId = `${level.id}.1`;
+      // If we are at the current depth and need to add sub-levels
+      if (currentDepth < targetDepth - 1) {
+        // Create a new sub-level
+        const newSubLevelId = `${level.id}.${(level.levels?.length || 0) + 1}`;
         const newSubLevel = {
           id: newSubLevelId,
           text: `Level ${newSubLevelId}`,
           levels: [],
         };
 
+        // Add the new sub-level if it doesn't already exist
         if (!level.levels?.some((subLevel) => subLevel.id === newSubLevelId)) {
           level.levels = [...(level.levels || []), newSubLevel];
         }
       }
 
+      // Recursively append sub-levels to the next depth
       if (level.levels) {
         level.levels = appendSubLevels(
           level.levels,
@@ -282,7 +285,7 @@ export default function CurriculumFramework() {
   }
 
   function handleAddSubLevels(num: number) {
-    const updatedLevels = appendSubLevels(levels, 0, noOfLevels);
+    const updatedLevels = appendSubLevels(levels, 0, num);
     console.log("Updated levels:", updatedLevels);
 
     setLevels(updatedLevels);
@@ -328,7 +331,9 @@ export default function CurriculumFramework() {
                 }`}
                 onClick={() => {
                   setNoOfLevels(num);
-                  handleAddSubLevels(num);
+                  if (num > noOfLevels) {
+                    handleAddSubLevels(num);
+                  }
                 }}
               >
                 {num}
@@ -342,7 +347,7 @@ export default function CurriculumFramework() {
           style={{
             width: `${w}vw`,
           }}
-          className="border mt-2 mb-4 overflow-hidden"
+          className="border mx-auto mt-2 mb-4 overflow-hidden"
         >
           {/* Table Headers */}
           <div className="flex bg-[#333333] text-white border">

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { X, Plus } from "lucide-react";
 import { FaAngleRight } from "react-icons/fa6";
 import { Button } from "./ui/button";
+import { initialLevels } from "@/lib/constants";
 
 interface Levels {
   id: string;
@@ -15,78 +16,10 @@ interface Levels {
 export default function CurriculumFramework() {
   const [levelLists, setLevelLists] = useState<number[]>([1, 2, 3, 4, 5]);
   const [noOfLevels, setNoOfLevels] = useState<number>(3);
-  // const dynamicWidth = `${100 / noOfLevels}%`;
-  const dynamicWidth = `${62 / noOfLevels}vw`;
-
-  const [levels, setLevels] = useState<Levels[]>([
-    {
-      id: "1",
-      text: "Level 1",
-      levels: [
-        {
-          id: "1.1",
-          text: "Level 1.1",
-          levels: [
-            {
-              id: "1.1.1",
-              text: "Level 1.1.1",
-              levels: [],
-            },
-            {
-              id: "1.1.2",
-              text: "Level 1.1.2",
-              levels: [],
-            },
-          ],
-        },
-        {
-          id: "1.2",
-          text: "Level 1.2",
-          levels: [
-            {
-              id: "1.2.1",
-              text: "Level 1.2.1",
-              levels: [],
-            },
-            {
-              id: "1.2.2",
-              text: "Level 1.2.2",
-              levels: [],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "2",
-      text: "Level 2",
-      levels: [
-        {
-          id: "2.1",
-          text: "Level 2.1",
-          levels: [
-            {
-              id: "2.1.1",
-              text: "Level 2.1.1",
-              levels: [],
-            },
-          ],
-        },
-        {
-          id: "2.2",
-          text: "Level 2.2",
-          levels: [
-            {
-              id: "2.2.1",
-              text: "Level 2.2.1",
-              levels: [],
-            },
-          ],
-        },
-      ],
-    },
-  ]);
   const w = 62;
+  const dynamicWidth = `${w / noOfLevels}vw`;
+
+  const [levels, setLevels] = useState<Levels[]>(initialLevels);
 
   function getColumnLevels(
     levels: Levels[],
@@ -156,13 +89,10 @@ export default function CurriculumFramework() {
 
     const findAndAddLevel = (levels: Levels[], parentId: string) => {
       const columnNumber = parseInt(parentId.split(".").length.toString());
-      console.log("Column index:", columnNumber);
       if (columnNumber === 1) {
         let newLevelId = `${parseInt(parentId.split(".").pop()!) + 1}`;
-        console.log("New level ID:", newLevelId);
 
         const diffColumnNumber = noOfLevels - columnNumber;
-        console.log("Diff column number:", diffColumnNumber);
         let newLevel: Levels = {
           id: newLevelId,
           text: `Level ${newLevelId}`,
@@ -193,14 +123,12 @@ export default function CurriculumFramework() {
           columnNumber > 1
             ? parentId.split(".").slice(0, -1).join(".")
             : parentId;
-        console.log("Comparing ID:", compareId, "with level ID:", level.id);
         if (level.id === compareId) {
           let newLevelId = `${parentId.split(".").slice(0, -1).join(".")}.${
             parseInt(parentId.split(".").pop()!) + 1
           }`;
 
           const diffColumnNumber = noOfLevels - columnNumber;
-          console.log("Diff column number:", diffColumnNumber);
           let newLevel: Levels = {
             id: newLevelId,
             text: `Level ${newLevelId}`,
@@ -225,7 +153,6 @@ export default function CurriculumFramework() {
           level.levels = level.levels
             ? [...level.levels, newLevel]
             : [newLevel];
-          console.log("New level added:", newLevel);
 
           return true;
         }
@@ -238,12 +165,10 @@ export default function CurriculumFramework() {
     };
 
     findAndAddLevel(newLevels, id);
-    console.log("New levels after addition:", newLevels);
     setLevels(newLevels);
   };
 
   const saveFramework = () => {
-    console.log("Saved framework:", { levels });
     alert("Framework saved successfully!");
   };
 
@@ -252,12 +177,8 @@ export default function CurriculumFramework() {
     currentDepth: number,
     targetDepth: number
   ): Levels[] {
-    console.log("Appending sub-levels at depth:", currentDepth, targetDepth);
-
-    return levels.map((level) => {
-      // If we are at the current depth and need to add sub-levels
+    return levels.map((level, i) => {
       if (currentDepth < targetDepth - 1) {
-        // Create a new sub-level
         const newSubLevelId = `${level.id}.${(level.levels?.length || 0) + 1}`;
         const newSubLevel = {
           id: newSubLevelId,
@@ -265,13 +186,11 @@ export default function CurriculumFramework() {
           levels: [],
         };
 
-        // Add the new sub-level if it doesn't already exist
         if (!level.levels?.some((subLevel) => subLevel.id === newSubLevelId)) {
           level.levels = [...(level.levels || []), newSubLevel];
         }
       }
 
-      // Recursively append sub-levels to the next depth
       if (level.levels) {
         level.levels = appendSubLevels(
           level.levels,
@@ -286,8 +205,6 @@ export default function CurriculumFramework() {
 
   function handleAddSubLevels(num: number) {
     const updatedLevels = appendSubLevels(levels, 0, num);
-    console.log("Updated levels:", updatedLevels);
-
     setLevels(updatedLevels);
   }
 

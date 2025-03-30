@@ -178,21 +178,27 @@ export default function CurriculumFramework() {
     currentDepth: number,
     targetDepth: number
   ): Levels[] {
-    return levels.map((level, i) => {
-      if (currentDepth < targetDepth - 1) {
-        const newSubLevelId = `${level.id}.${(level.levels?.length || 0) + 1}`;
-        const newSubLevel = {
-          id: newSubLevelId,
-          text: `Level ${newSubLevelId}`,
-          levels: [],
-        };
+    return levels.map((level) => {
+      if (!level.levels) level.levels = [];
 
-        if (!level.levels?.some((subLevel) => subLevel.id === newSubLevelId)) {
-          level.levels = [...(level.levels || []), newSubLevel];
+      if (currentDepth === targetDepth - 1) {
+        if (level.levels.length === 0) {
+          const newSubLevelId = `${level.id}.1`;
+          level.levels.push({
+            id: newSubLevelId,
+            text: `Level ${newSubLevelId}`,
+            levels: [],
+          });
         }
-      }
-
-      if (level.levels) {
+      } else if (currentDepth < targetDepth - 1) {
+        if (level.levels.length === 0) {
+          const newSubLevelId = `${level.id}.1`;
+          level.levels.push({
+            id: newSubLevelId,
+            text: `Level ${newSubLevelId}`,
+            levels: [],
+          });
+        }
         level.levels = appendSubLevels(
           level.levels,
           currentDepth + 1,

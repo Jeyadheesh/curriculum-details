@@ -21,27 +21,6 @@ export default function CurriculumFramework() {
 
   const [levels, setLevels] = useState<Levels[]>(initialLevels);
 
-  function getColumnLevels(
-    levels: Levels[],
-    columnIndex: number,
-    currentLevel: number = 0
-  ): Levels[] {
-    if (currentLevel === columnIndex) {
-      return levels;
-    }
-
-    const subLevels: Levels[] = [];
-    levels.forEach((level) => {
-      if (level.levels) {
-        subLevels.push(
-          ...getColumnLevels(level.levels, columnIndex, currentLevel + 1)
-        );
-      }
-    });
-
-    return subLevels;
-  }
-
   function renderLevels(levels?: Levels[]) {
     if (!levels) return null;
     return levels
